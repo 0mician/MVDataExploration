@@ -1,0 +1,40 @@
+\documentclass[11pt, a4paper,titlepage]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+\usepackage{longtable}
+\usepackage{textpos}
+\usepackage{acronym}
+\usepackage[nonumberlist,acronym,toc]{glossaries}
+\usepackage{latexsym}
+\usepackage{textcomp}
+\usepackage[bottom]{footmisc}
+\usepackage[left=2.85cm, right=2.85cm, top=2.85cm, bottom=2.85cm]{geometry}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\graphicspath{ {figures/} }
+\usepackage{array}
+\usepackage{float}
+\usepackage{pdfpages}
+\usepackage{titlesec}
+\usepackage{siunitx}
+\usepackage{enumitem}
+\usepackage{adjustbox}
+\usepackage[small]{caption}
+\usepackage{subcaption}
+\usepackage{lscape}
+\usepackage[toc,page]{appendix}
+\usepackage[pdftex, pdfborderstyle={/S/U/W 0} % this disables the boxes around links
+            ]{hyperref}
+
+% Equation environment
+\newenvironment{conditions}
+  {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
+  {\end{tabular}\par\vspace{\belowdisplayskip}}
+
+\begin{document}
+
+\include{title}
+
+\bibliographystyle{ieeetr} 
+\bibliography{bib-db}
+\end{document}

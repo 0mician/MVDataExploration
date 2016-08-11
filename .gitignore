@@ -1,0 +1,41 @@
+# emacs specific files
+auto-save-list
+custom.el
+url/
+.org-id-locations
+\#*
+org-mode-config.el
+*~
+.#*
+\#*\#
+*.log
+.DS_Store
+org-clock-save.el
+emacs-config.el
+
+# various 
+data/
+.~lock.*
+MatlabStyle1p5.pdf
+html/
+export_fig/
+
+#latex
+*.aux
+*.bbl
+*.blg
+*.toc
+*.out
+
+
+# R
+*.RData
+*.Rhistory
+
+# test matlab
+test.m
+
+# resources (download latest versions)
+resources/SVMCourse/
+resources/m/
+resources/svm/
