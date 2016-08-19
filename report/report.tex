@@ -56,20 +56,24 @@ bacterial species \emph{Pseudomonas aeruginosa}.
 
 The goal of genome assembly is to reconstruct the genome of an
 organism using the reads issued by a sequencer, which in my case was
-an \emph{Illumina} machine. For each of the 47 strains, multiple
+an \emph{Illumina NextSeq 500}. For each of the 47 strains, multiple
 genome assemblies were performed using different software and
-approaches. \emph{De novo} genome assemblies can be thought of as
-hypothesis as to what the genome of the organism looks like, and some
-quality metrics can be used to evaluate their quality.
+approaches, each assembly giving different hypothesis for what the
+original sequenced genome looks like.
+
+In this analysis, the goal is to detect outliers in order to remove
+them from the set of hypothesis, and explore the structure of the
+data.
 
 \section{Description of the dataset}
 
 The dataset consists of 3102 observations, as each of the 47 strains
 went through 67 different assemblies each, and 36 variables were
 surveyed. A few missing values exist in the dataset, but their amount
-is very limited. An exhaustive description of the variables is
-available here \cite{gurevich2013quast}, here is a summary of selected
-variables:
+is very limited (90 out of 3102) and can be traced back to software
+errors, hence they were removed prior to the analysis. An exhaustive
+description of the variables is available here
+\cite{gurevich2013quast}, here is a summary of selected variables:
 
 \begin{table}[h]
   \centering
@@ -77,9 +81,9 @@ variables:
     \hline
     \# & name            & description                                                  \\ \hline
     1  & Strain ID       & Label with the ID of the strain (from 9108 to 9154)          \\
-    2  & Coverage        & Genome coverage estimation based on sequencing results       \\
-    3  & Assembly        & Label for the 67 assembly pipelines                          \\
-    4  & Hybrid          & Boolean value indicating the approach for the assembly       \\ 
+    2  & Assembly        & Label for the 67 assembly pipelines                          \\
+    3  & Hybrid          & Boolean value indicating the approach for the assembly       \\ 
+    4  & Coverage        & Genome coverage estimation based on sequencing results       \\
     5  & NContig         & Total number of contigs for the assembly                     \\
     6  & LargestContig   & Length (in base pairs) of the longuest contig                \\
     7  & TotalLength     & Total length of the assembled genome                         \\ 
@@ -97,6 +101,20 @@ variables:
     36 & LGA75           & Corrected LG75 taking into account misassemblies             \\ \hline
   \end{tabular}
 \end{table}
+
+\section{R code}
+
+\section{Output}
+\subsection{Dataset structure}
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.75]{corrplot-crop.pdf}
+  \caption{This graph shows the correlation between the different
+    variables of the dataset, from a correlation of +1 (blue) to -1
+    (red)}
+  \label{fig:corrplot}
+\end{figure}
 
 \bibliographystyle{ieeetr} 
 \bibliography{bib-db}
