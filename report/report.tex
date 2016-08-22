@@ -8,7 +8,7 @@
 \usepackage{latexsym}
 \usepackage{textcomp}
 \usepackage[bottom]{footmisc}
-\usepackage[left=2.85cm, right=2.85cm, top=2.85cm, bottom=2.85cm]{geometry}
+\usepackage[left=2.85cm, right=2.85cm, top=2cm, bottom=2cm]{geometry}
 \usepackage[english]{babel}
 \usepackage{graphicx}
 \graphicspath{ {figures/} }
@@ -21,10 +21,38 @@
 \usepackage{adjustbox}
 \usepackage[small]{caption}
 \usepackage{subcaption}
+\usepackage{listings}
 \usepackage{lscape}
 \usepackage[toc,page]{appendix}
 \usepackage[pdftex, pdfborderstyle={/S/U/W 0} % this disables the boxes around links
             ]{hyperref}
+\usepackage{color}
+\lstset{ %
+  language=R,                % the language of the code
+  basicstyle=\footnotesize,           % the size of the fonts that are used for the code
+  numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line
+                                  % will be numbered
+  numbersep=5pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  %frame=single,                   % adds a frame around the code
+  rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=b,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+                                  % also try caption instead of title
+  keywordstyle=\color{blue},          % keyword style
+  commentstyle=\color{gray},       % comment style
+  stringstyle=\color{purple},         % string literal style
+  %escapeinside={\%*}{*)},            % if you want to add a comment within your code
+  morekeywords={*,...}               % if you want to add more keywords to the set
+}
 
 % Equation environment
 \newenvironment{conditions}
@@ -62,15 +90,16 @@ approaches, each assembly giving different hypothesis for what the
 original sequenced genome looks like.
 
 In this analysis, the goal is to detect outliers in order to remove
-them from the set of hypothesis, and explore the structure of the
-data.
+them from the set of hypothesis, and explore the structure of the data
+in order to decide which variable can be used further to select the
+hypothesis via an ensemble method.
 
 \section{Description of the dataset}
 
 The dataset consists of 3102 observations, as each of the 47 strains
 went through 67 different assemblies each, and 36 variables were
 surveyed. A few missing values exist in the dataset, but their amount
-is very limited (90 out of 3102) and can be traced back to software
+is very limited (43 out of 3102) and can be traced back to software
 errors, hence they were removed prior to the analysis. An exhaustive
 description of the variables is available here
 \cite{gurevich2013quast}, here is a summary of selected variables:
@@ -102,21 +131,188 @@ description of the variables is available here
   \end{tabular}
 \end{table}
 
-\section{R code}
-
 \section{Output}
 \subsection{Dataset structure}
 
-\begin{figure}
+\begin{figure}[H]
   \centering
-  \includegraphics[scale=0.75]{corrplot-crop.pdf}
+  \includegraphics[scale=0.6]{corrplot-crop.pdf}
   \caption{This graph shows the correlation between the different
     variables of the dataset, from a correlation of +1 (blue) to -1
     (red)}
   \label{fig:corrplot}
+  \includegraphics[scale=0.6]{parcoord.pdf}
+  \caption{Parallel coordinates plot showing strong outliers (circled
+    in orange)}
+  \label{fig:parcoord}
 \end{figure}
 
-\bibliographystyle{ieeetr} 
+\begin{figure}[h]
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=1\linewidth]{scatterplot_gfvsmis.pdf}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=1\linewidth]{scatterplot_indels.pdf}
+  \end{subfigure}
+  \caption{Outlier clusters detected and removed from set of hypothesis}
+  \label{fig:outliers}
+\end{figure}
+
+\begin{figure}[h]
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=1\linewidth]{pca-crop.pdf}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=1\linewidth]{biplot-crop.pdf}
+  \end{subfigure}
+  \caption{left: plot of the first 2 PC, coloured by strains; right:
+    biplot graph.}
+  \label{fig:pcplot}
+\end{figure}
+
+\begin{figure}[h]
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=1\linewidth]{mahalanobis.pdf}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=1\linewidth]{screeplot.pdf}
+  \end{subfigure}
+  \caption{Left: mahalanobis plot and outliers identification, right: PCA scree plot}
+\end{figure}
+
+\section{Interpretation}
+
+The dataset displays a lot of correlational structure in many of the
+variables, as illustrated on figure \ref{fig:corrplot}. The parallel
+coordinates plot (figure \ref{fig:parcoord}) allowed a very
+straightforward identification of many outlier clusters, which are
+illustrated on figure \ref{fig:outliers}. A biological explanation was
+discovered for the presence of these clusters, and they were
+eliminated from the list of hypothesis.
+
+Given Large amount of correlational structure, using PCA makes sense
+here to see the real dimensionality of the dataset. I used the
+correlation because of huge scale differences so as not to model the
+scales. A large amount of variability can be captured using the PC
+(the first 7 PC explain 91\% of the variability, and 10 PC explaining
+96\%). The plot and biplot of the two first component (figure
+\ref{fig:pcplot}) showed an interesting line grouping structure, with
+the colors indicating the different strains, this grouping structure
+was also partially captured during attempts at hierarchical
+clustering. Factor analysis (code not reported here) also showed a
+large amount of commonality using few factors.
+
+The analysis presented here was also combined with some other
+univariate exploration of the variables, such as GC content, Length of
+assembly, etc. and it allowed me to filter out a fair amount of
+outlier hypothesis. In the end, the metric NGA50 proved to be the most
+interesting to make my ensemble decision upon.
+
+\section{R Code}
+
+Some of the ggplot code has been truncated (themes and
+annotations). The full code is available in my github repository,
+together with other attempts at analysis (factor analysis,
+clustering):
+
+\begin{lstlisting}[language=R]
+library(ggplot2)
+library(corrplot)
+library(pastecs)
+library(plotrix)
+
+setwd(dir = "/home/sid/Dev/MVDataExploration/data/")
+asm <- read.csv(file = "quast_all_metrics_reduced.csv", header=TRUE)
+str(asm); dim(asm)
+
+# basic dataset statistics, correlations
+stat.desc(asm[,4:36], basic=TRUE, desc=TRUE)
+asm.corr <- cor(asm[,4:36])
+corrplot(asm.corr, type="upper", order="hclust", tl.col="black", tl.srt=90)
+
+# Profile plot 
+asm.matrix <- as.matrix(asm[,4:36]) 
+asm.matrix.std <- scale(asm.matrix, center=T, scale=T) 
+asm.melt <- melt(asm.matrix.std)
+colnames(asm.melt) <- c("RowID", "Variable", "Value")
+
+ggplot(asm.melt,aes(x=Variable,y=Value,group=RowID)) +
+  geom_line(colour=I("blue"), alpha=0.1)
+
+# outliers
+ggplot(asm, aes(GenomeFraction, Nmisassemblies)) +
+  geom_point(data=subset(asm, Assembly != "PA7" & Assembly != "VRFPA04"), colour=I("blue"),alpha=0.5) +
+  geom_point(data=subset(asm, Assembly == "PA7"), colour=I("sienna1")) +
+  geom_point(data=subset(asm, Assembly == "VRFPA04"), colour=I("cyan4"))
+ggsave("scatterplot_gfvsmis.pdf")
+
+# subsetting (removal of the 2 pipelines PA7 and VRFPA04, and Ncontigs > 400)
+asm.filter <- subset(asm, Assembly != "PA7" & Assembly != "VRFPA04" & Ncontigs < 400)
+
+ggplot(asm.filter, aes(NmismatchesPer100kbp, NindelsPer100kbp)) +
+  geom_point(data=subset(asm.filter, StrainID != "9122" & StrainID != "9132"), colour=I("blue"),alpha=0.5) +
+  geom_point(data=subset(asm.filter,StrainID == "9122"),colour=I("sienna1")) +
+  geom_point(data=subset(asm.filter,StrainID == "9132"),colour=I("cyan4"))
+ggsave("scatterplot_indels.pdf")
+
+# further subsetting using mahalanobis
+asm.filter <- subset(asm.filter, StrainID != "9122" & StrainID != "9132" & Ncontigs < 400)
+md <- mahalanobis(asm.filter[,4:36], colMeans(asm.filter[,4:36]), cov(asm.filter[,4:36]))
+plot(md, main="Mahalanobis outlier detection")
+identify(md)
+asm.filter <- asm.filter[-c(865,254,871,1329,2080,2381,888,1303,866,864),]
+
+# PCA analysis
+asm.pca <- princomp(asm.filter[,4:36], cor = T)
+screeplot(asm.pca)
+asm.pca$loadings
+summary(asm.pca)
+plot(asm.pca$scores[,1:2], type="p", pch=19, cex=0.7, col=asm.filter$StrainID)
+
+# biplot
+asm.matrix <- as.matrix(asm.filter[,4:36])
+xm<-apply(asm.matrix,2,mean)
+y<-sweep(asm.matrix,2,xm)
+ss<-(t(y)%*%y)
+s<-ss/(nrow(x)-1)
+d<-(diag(ss))^(-1/2)
+e<-diag(d,nrow=ncol(asm.matrix),ncol=ncol(asm.matrix))
+z<-y%*%e
+r<-t(z)%*%z
+q<-svd(z)
+gfd<-((q$d[1])+(q$d[2]))/sum(q$d)
+gfz<-(((q$d[1])^2)+((q$d[2])^2))/sum((q$d)^2)
+gfr<-(((q$d[1])^4)+((q$d[2])^4))/sum((q$d)^4)
+l<-diag(q$d,nrow=ncol(asm.matrix),ncol=ncol(asm.matrix))
+R.B<-q$u        #scores matrix
+C.B<-q$v%*%l    #loadings
+#possibility to stretch scores by a scale factor
+scalefactor<-10
+R.B<-q$u *scalefactor
+
+par(mar=c(4,4,4,4),pty='s',oma=c(5,0,0,0),font=2)
+plot(R.B[ ,1],R.B[ ,2],axes=F,xlim=c(-1,1),ylim=c(-1,1),xlab=' ',ylab=' ',cex=2.8, pch=".", col="grey")
+mtext('First component',side=1,line=3,cex=.8)
+mtext('Second component',side=2,line=3,cex=.8)
+axis(1,at=c(-1,-.8,-.6,-.4,-.2,0,.2,.4,.6,.8,1),cex=.8)
+axis(2,at=c(-1,-.8,-.6,-.4,-.2,0,.2,.4,.6,.8,1),cex=.8)
+box( )
+
+text(C.B[,1]-.05,C.B[,2]+.05,as.character(dimnames(asm.matrix)[[2]]),cex=0.7,col="green4")
+for (i in seq(1,nrow(C.B),by=1))
+  arrows(0,0,C.B[i,1],C.B[i,2],col="green4")
+
+#Draw circle unit
+draw.circle(0,0,1,border='black')
+\end{lstlisting}
+
+\bibliographystyle{ieeetr}
 \bibliography{bib-db}
 
 \end{document}
