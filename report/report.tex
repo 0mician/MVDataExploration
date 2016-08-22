@@ -83,26 +83,26 @@ investigated the genomics of a set of 47 nosocomial isolates of the
 bacterial species \emph{Pseudomonas aeruginosa}.
 
 The goal of genome assembly is to reconstruct the genome of an
-organism using the reads issued by a sequencer, which in my case was
-an \emph{Illumina NextSeq 500}. For each of the 47 strains, multiple
-genome assemblies were performed using different software and
-approaches, each assembly giving different hypothesis for what the
-original sequenced genome looks like.
+organism using the short reads issued by the sequencer, which in my
+case was from \emph{Illumina}. Multiple genome assemblies were
+performed using different software and approaches for each of my 47
+strains. Each assembly gave slightly different hypothesis for what the
+original sequenced genome was.
 
 In this analysis, the goal is to detect outliers in order to remove
 them from the set of hypothesis, and explore the structure of the data
-in order to decide which variable can be used further to select the
-hypothesis via an ensemble method.
+in order to decide which variables can be used to select the best
+hypothesis for each strains via an ensemble method.
 
 \section{Description of the dataset}
 
-The dataset consists of 3102 observations, as each of the 47 strains
-went through 67 different assemblies each, and 36 variables were
-surveyed. A few missing values exist in the dataset, but their amount
-is very limited (43 out of 3102) and can be traced back to software
-errors, hence they were removed prior to the analysis. An exhaustive
-description of the variables is available here
-\cite{gurevich2013quast}, here is a summary of selected variables:
+The dataset consists of 36 variables and 3102 observations, as each of
+the 47 strains went through 67 different assemblie. A few missing
+values exist in the dataset, but their amount is very limited (43 out
+of 3102) and can be traced back to software errors, hence they were
+removed prior to the analysis. An exhaustive description of the
+variables is available here \cite{gurevich2013quast}, here is a
+summary of selected variables:
 
 \begin{table}[h]
   \centering
@@ -136,7 +136,7 @@ description of the variables is available here
 
 \begin{figure}[H]
   \centering
-  \includegraphics[scale=0.6]{corrplot-crop.pdf}
+  \includegraphics[scale=0.6]{corrplot.pdf}
   \caption{This graph shows the correlation between the different
     variables of the dataset, from a correlation of +1 (blue) to -1
     (red)}
@@ -156,21 +156,22 @@ description of the variables is available here
     \centering
     \includegraphics[width=1\linewidth]{scatterplot_indels.pdf}
   \end{subfigure}
-  \caption{Outlier clusters detected and removed from set of hypothesis}
+  \caption{Outlier clusters detected and removed from the set of
+    hypothesis}
   \label{fig:outliers}
 \end{figure}
 
 \begin{figure}[h]
   \begin{subfigure}{.5\textwidth}
     \centering
-    \includegraphics[width=1\linewidth]{pca-crop.pdf}
+    \includegraphics[width=1\linewidth]{pca.pdf}
   \end{subfigure}%
   \begin{subfigure}{.5\textwidth}
     \centering
-    \includegraphics[width=1\linewidth]{biplot-crop.pdf}
+    \includegraphics[width=1\linewidth]{biplot.pdf}
   \end{subfigure}
-  \caption{left: plot of the first 2 PC, coloured by strains; right:
-    biplot graph.}
+  \caption{left: Scores plot for the first 2 PC, coloured by strains;
+    right: biplot graph.}
   \label{fig:pcplot}
 \end{figure}
 
@@ -189,27 +190,28 @@ description of the variables is available here
 \section{Interpretation}
 
 The dataset displays a lot of correlational structure in many of the
-variables, as illustrated on figure \ref{fig:corrplot}. The parallel
-coordinates plot (figure \ref{fig:parcoord}) allowed a very
-straightforward identification of many outlier clusters, which are
-illustrated on figure \ref{fig:outliers}. A biological explanation was
-discovered for the presence of these clusters, and they were
-eliminated from the list of hypothesis.
+variables, as illustrated on figure \ref{fig:corrplot}. Looking into
+the definition of the metrics helped understand why that is. The
+parallel coordinates plot (figure \ref{fig:parcoord}) allowed
+identification of many outlier clusters which were investigated
+further and are illustrated on figure \ref{fig:outliers}. A biological
+explanation was discovered for the presence of these clusters, and
+they were eliminated from the list of hypothesis.
 
-Given Large amount of correlational structure, using PCA makes sense
-here to see the real dimensionality of the dataset. I used the
-correlation because of huge scale differences so as not to model the
-scales. A large amount of variability can be captured using the PC
-(the first 7 PC explain 91\% of the variability, and 10 PC explaining
-96\%). The plot and biplot of the two first component (figure
-\ref{fig:pcplot}) showed an interesting line grouping structure, with
-the colors indicating the different strains, this grouping structure
-was also partially captured during attempts at hierarchical
-clustering. Factor analysis (code not reported here) also showed a
-large amount of commonality using few factors.
+Given the existence of correlational structure, PCA was used here to
+uncover the real dimensionality of the dataset. The analysis was based
+on the correlation matrix because of huge scale differences accross
+the variables. A large amount of variability can be captured using PCs
+(the first 7 PCs explain 91\% of the variability, and 10 PCs
+explaining 96\%). The plot and biplot of the two first component
+(figure \ref{fig:pcplot}) showed an interesting line grouping
+structure, with the colors indicating the different strains, this
+grouping structure was also partially captured during attempts at
+hierarchical clustering. Factor analysis (code not reported here)
+showed a large amount of commonality using a few factors.
 
 The analysis presented here was also combined with some other
-univariate exploration of the variables, such as GC content, Length of
+univariate exploration of the variables, such as GC content, length of
 assembly, etc. and it allowed me to filter out a fair amount of
 outlier hypothesis. In the end, the metric NGA50 proved to be the most
 interesting to make my ensemble decision upon.
@@ -226,6 +228,7 @@ library(ggplot2)
 library(corrplot)
 library(pastecs)
 library(plotrix)
+library(rgl)
 
 setwd(dir = "/home/sid/Dev/MVDataExploration/data/")
 asm <- read.csv(file = "quast_all_metrics_reduced.csv", header=TRUE)
@@ -274,6 +277,7 @@ screeplot(asm.pca)
 asm.pca$loadings
 summary(asm.pca)
 plot(asm.pca$scores[,1:2], type="p", pch=19, cex=0.7, col=asm.filter$StrainID)
+plot3d(asm.pca$scores[,1:3], col=asm.filter$StrainID)
 
 # biplot
 asm.matrix <- as.matrix(asm.filter[,4:36])
@@ -303,11 +307,9 @@ mtext('Second component',side=2,line=3,cex=.8)
 axis(1,at=c(-1,-.8,-.6,-.4,-.2,0,.2,.4,.6,.8,1),cex=.8)
 axis(2,at=c(-1,-.8,-.6,-.4,-.2,0,.2,.4,.6,.8,1),cex=.8)
 box( )
-
 text(C.B[,1]-.05,C.B[,2]+.05,as.character(dimnames(asm.matrix)[[2]]),cex=0.7,col="green4")
 for (i in seq(1,nrow(C.B),by=1))
   arrows(0,0,C.B[i,1],C.B[i,2],col="green4")
-
 #Draw circle unit
 draw.circle(0,0,1,border='black')
 \end{lstlisting}

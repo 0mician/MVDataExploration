@@ -14,7 +14,7 @@ org-clock-save.el
 emacs-config.el
 
 # various 
-data/
+# data/
 .~lock.*
 MatlabStyle1p5.pdf
 html/
