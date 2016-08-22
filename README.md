@@ -5,4 +5,6 @@ assembly metrics. The analysis was completed in the context of the
 class *Applied Multivariate Statistical Analysis* taught at KU Leuven
 (Winter 2015).
 
+# Details
 
+[See report](report/report.pdf)
