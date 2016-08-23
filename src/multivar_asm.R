@@ -173,3 +173,12 @@ asm.clust <- hclust(dist(asm.matrix), method="average")
 plclust(asm.clust)
 asm.gp <- cutree(asm.clust, k=10)
 clusplot(asm.matrix, asm.gp, stand=TRUE, labels=10)
+
+#######
+# MDS #
+#######
+library("vegan")
+asm.sub <- sample(2751, 200)
+asm.matrix <- as.matrix(asm.filter[asm.sub,4:36])
+tree.asm <- metaMDS(asm.matrix)
+plot(tree.asm, type="t")
